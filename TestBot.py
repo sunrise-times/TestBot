@@ -111,4 +111,7 @@ if st.button("Send"):
         st.session_state.input = ""
         st.experimental_rerun()
 
-# Restart
+# Restart button
+if st.button("🔄 Restart Chat"):
+    st.session_state.chat_history = []
+    st.experimental_rerun()
