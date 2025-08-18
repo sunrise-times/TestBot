@@ -5,12 +5,12 @@ import time
 # Page config
 st.set_page_config(page_title="Infinity Copilot", layout="centered")
 
-# Custom CSS for chat bubbles and dark theme
+# Custom CSS for chat bubbles and light theme
 st.markdown("""
     <style>
         body {
-            background-color: #1e1e1e;
-            color: white;
+            background-color: #f5f5f5;
+            color: black;
             font-family: 'Segoe UI', sans-serif;
         }
         .chat-bubble {
@@ -21,14 +21,14 @@ st.markdown("""
             word-wrap: break-word;
         }
         .user-bubble {
-            background-color: #3a3a3a;
-            color: white;
+            background-color: #d4f8d4;
+            color: black;
             margin-left: auto;
             text-align: right;
         }
         .bot-bubble {
-            background-color: #2e2e2e;
-            color: white;
+            background-color: #d0e7ff;
+            color: black;
             margin-right: auto;
             text-align: left;
         }
@@ -111,7 +111,4 @@ if st.button("Send"):
         st.session_state.input = ""
         st.experimental_rerun()
 
-# Restart button
-if st.button("🔄 Restart Chat"):
-    st.session_state.chat_history = []
-    st.experimental_rerun()
+# Restart
