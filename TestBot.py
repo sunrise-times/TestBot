@@ -1,8 +1,11 @@
 import streamlit as st
 import random
 
-# Title of the chatbot app
-st.title("Intel AI Chatbot 🤖")
+# Set page config
+st.set_page_config(page_title="Intel AI Chatbot", layout="centered")
+
+# Title
+st.markdown("<h2 style='text-align: center;'>Intel AI Chatbot 🤖</h2>", unsafe_allow_html=True)
 st.write("Ask a question related to Intel processors or support.")
 
 # Instructions dictionary
@@ -38,28 +41,37 @@ instructions = {
     ]
 }
 
-# Function to simulate typing effect
-def typing_response(text, delay=0.02):
-    return text  # Streamlit doesn't support real-time typing, so we return the full text
+# Chat history
+if "chat_history" not in st.session_state:
+    st.session_state.chat_history = []
 
-# Input box for user query
+# Input box
 user_input = st.text_input("Ask Intel AI:")
 
-# Display response if user enters something
+# Process input
 if user_input:
     x = user_input.lower().strip()
     words = x.split()
 
     if x in ("ok bye", "exit", "quit"):
-        st.success("Intel AI: Goodbye! Take care.")
+        st.session_state.chat_history.append(("user", user_input))
+        st.session_state.chat_history.append(("bot", "Intel AI: Goodbye! Take care."))
     else:
         found = False
         for keywords, reply_list in instructions.items():
             if any(word in keywords for word in words):
                 response = random.choice(reply_list)
-                st.info(typing_response(response))
+                st.session_state.chat_history.append(("user", user_input))
+                st.session_state.chat_history.append(("bot", response))
                 found = True
                 break
-
         if not found:
-            st.warning("Intel AI: Sorry, I did not understand. Can you provide more details?")
+            st.session_state.chat_history.append(("user", user_input))
+            st.session_state.chat_history.append(("bot", "Intel AI: Sorry, I did not understand. Can you provide more details?"))
+
+# Display chat bubbles
+for sender, message in st.session_state.chat_history:
+    if sender == "user":
+        st.markdown(f"<div style='text-align: right; background-color: #DCF8C6; padding: 10px; border-radius: 10px; margin: 5px;'>{message}</div>", unsafe_allow_html=True)
+    else:
+        st.markdown(f"<div style='text-align: left; background-color: #F1F0F0; padding: 10px; border-radius: 10px; margin: 5px;'>{message}</div>", unsafe_allow_html=True)
