@@ -1,10 +1,11 @@
 import streamlit as st
 import random
+import time
 
-# Set page config
+# Page config
 st.set_page_config(page_title="Infinity Copilot", layout="centered")
 
-# Custom CSS for Copilot-like look
+# Custom CSS for chat bubbles and dark theme
 st.markdown("""
     <style>
         body {
@@ -12,28 +13,23 @@ st.markdown("""
             color: white;
             font-family: 'Segoe UI', sans-serif;
         }
-        .stTextInput > div > input {
-            background-color: #2e2e2e;
-            color: white;
-            border: 1px solid #444;
-            border-radius: 6px;
+        .chat-bubble {
+            padding: 10px 15px;
+            border-radius: 15px;
+            margin: 8px 0;
+            max-width: 80%;
+            word-wrap: break-word;
         }
-        .stButton > button {
-            background-color: #444;
-            color: white;
-            border-radius: 6px;
-        }
-        .message {
-            padding: 10px;
-            border-radius: 8px;
-            margin-bottom: 10px;
-        }
-        .user {
+        .user-bubble {
             background-color: #3a3a3a;
+            color: white;
+            margin-left: auto;
             text-align: right;
         }
-        .bot {
+        .bot-bubble {
             background-color: #2e2e2e;
+            color: white;
+            margin-right: auto;
             text-align: left;
         }
     </style>
@@ -66,11 +62,6 @@ instructions = {
     ]
 }
 
-# Initialize session state
-if "chat_history" not in st.session_state:
-    st.session_state.chat_history = []
-
-# Chat response logic
 def get_response(message):
     message = message.lower().strip()
     if message in ("exit", "quit", "ok bye"):
@@ -83,22 +74,41 @@ def get_response(message):
 
     return "Sorry, I did not understand. Can you provide more details?"
 
+# Initialize session state
+if "chat_history" not in st.session_state:
+    st.session_state.chat_history = []
+
 # Title
 st.markdown("<h2 style='text-align:center;'>Infinity Copilot</h2>", unsafe_allow_html=True)
 
-# Chat display
+# Display chat history with bubbles
 for sender, msg in st.session_state.chat_history:
-    css_class = "user" if sender == "You" else "bot"
-    st.markdown(f"<div class='message {css_class}'><strong>{sender}:</strong> {msg}</div>", unsafe_allow_html=True)
+    bubble_class = "user-bubble" if sender == "You" else "bot-bubble"
+    st.markdown(f"<div class='chat-bubble {bubble_class}'><strong>{sender}:</strong> {msg}</div>", unsafe_allow_html=True)
 
-# Input form
-with st.form("chat_form"):
-    user_input = st.text_input("Ask Infinity...", "")
-    submitted = st.form_submit_button("Send")
-    if submitted and user_input:
-        response = get_response(user_input)
+# Input
+user_input = st.text_input("Ask Infinity...", key="input")
+
+# Send button
+if st.button("Send"):
+    if user_input:
         st.session_state.chat_history.append(("You", user_input))
+        response = get_response(user_input)
+
+        # Simulate typing effect
+        typing_placeholder = st.empty()
+        typed_text = ""
+        for char in response:
+            typed_text += char
+            typing_placeholder.markdown(
+                f"<div class='chat-bubble bot-bubble'><strong>Infinity:</strong> {typed_text}</div>",
+                unsafe_allow_html=True
+            )
+            time.sleep(0.02)
+
+        typing_placeholder.empty()
         st.session_state.chat_history.append(("Infinity", response))
+        st.session_state.input = ""
         st.experimental_rerun()
 
 # Restart button
