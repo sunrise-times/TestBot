@@ -2,76 +2,106 @@ import streamlit as st
 import random
 
 # Set page config
-st.set_page_config(page_title="Intel AI Chatbot", layout="centered")
+st.set_page_config(page_title="Infinity Copilot", layout="centered")
 
-# Title
-st.markdown("<h2 style='text-align: center;'>Intel AI Chatbot 🤖</h2>", unsafe_allow_html=True)
-st.write("Ask a question related to Intel processors or support.")
+# Custom CSS for Copilot-like look
+st.markdown("""
+    <style>
+        body {
+            background-color: #1e1e1e;
+            color: white;
+            font-family: 'Segoe UI', sans-serif;
+        }
+        .stTextInput > div > input {
+            background-color: #2e2e2e;
+            color: white;
+            border: 1px solid #444;
+            border-radius: 6px;
+        }
+        .stButton > button {
+            background-color: #444;
+            color: white;
+            border-radius: 6px;
+        }
+        .message {
+            padding: 10px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+        }
+        .user {
+            background-color: #3a3a3a;
+            text-align: right;
+        }
+        .bot {
+            background-color: #2e2e2e;
+            text-align: left;
+        }
+    </style>
+""", unsafe_allow_html=True)
 
-# Instructions dictionary
+# Chatbot logic
 instructions = {
     ("hello", "hi"): [
-        "Intel AI: Hello, how can I help you?",
-        "Intel AI: Hi there, what's on your mind?",
-        "Intel AI: Hello, I am here to assist"
+        "Hello, how can I help you?",
+        "Hi there, what's on your mind?",
+        "Hello, I am here to assist"
     ],
     ("hot", "overheat", "temperature", "high"): [
-        ("Intel AI: I will look for this, if you can tell me whether the processor used is NUC, "
-         "box, or tray")
+        "I will look for this, if you can tell me whether the processor used is NUC, box, or tray"
     ],
     ("nuc",): [
-        """Intel AI: Customer Support Services for Intel NUC Products Has Transitioned to ASUS as of January 16, 2024. 
-           For more details refer to article: 000097279"""
+        "Customer Support Services for Intel NUC Products Has Transitioned to ASUS as of January 16, 2024. For more details refer to article: 000097279"
     ],
     ("tray", "laptop"): [
-        "Intel AI: Send customer to system manufacturer as we do not handle laptop or pre-built systems"
+        "Send customer to system manufacturer as we do not handle laptop or pre-built systems"
     ],
     ("box", "desktop"): [
-        "Intel AI: Can you give me a complete model number of the processor?"
+        "Can you give me a complete model number of the processor?"
     ],
     ("13900k", "14900", "intelcore", "ultra", "235a"): [
-        "Intel AI: Suggest customer to check:\n"
-        "- The thermal solution\n"
-        "- Check fan operation status\n"
-        "- Load BIOS to default or Update BIOS\n"
-        "For more troubleshooting steps refer to article: 000005791"
+        "Suggest customer to check:\n- The thermal solution\n- Check fan operation status\n- Load BIOS to default or Update BIOS\nFor more troubleshooting steps refer to article: 000005791"
     ],
     ("Intel", "Core", "i5", "3450", "Processor"): [
-        "Intel AI: Oh oh! This is an EOIS product, suggest customer to post in Intel community forum"
+        "Oh oh! This is an EOIS product, suggest customer to post in Intel community forum"
     ]
 }
 
-# Chat history
+# Initialize session state
 if "chat_history" not in st.session_state:
     st.session_state.chat_history = []
 
-# Input box
-user_input = st.text_input("Ask Intel AI:")
+# Chat response logic
+def get_response(message):
+    message = message.lower().strip()
+    if message in ("exit", "quit", "ok bye"):
+        return "Goodbye! Take care."
 
-# Process input
-if user_input:
-    x = user_input.lower().strip()
-    words = x.split()
+    words = message.split()
+    for keywords, replies in instructions.items():
+        if any(word in keywords for word in words):
+            return random.choice(replies)
 
-    if x in ("ok bye", "exit", "quit"):
-        st.session_state.chat_history.append(("user", user_input))
-        st.session_state.chat_history.append(("bot", "Intel AI: Goodbye! Take care."))
-    else:
-        found = False
-        for keywords, reply_list in instructions.items():
-            if any(word in keywords for word in words):
-                response = random.choice(reply_list)
-                st.session_state.chat_history.append(("user", user_input))
-                st.session_state.chat_history.append(("bot", response))
-                found = True
-                break
-        if not found:
-            st.session_state.chat_history.append(("user", user_input))
-            st.session_state.chat_history.append(("bot", "Intel AI: Sorry, I did not understand. Can you provide more details?"))
+    return "Sorry, I did not understand. Can you provide more details?"
 
-# Display chat bubbles
-for sender, message in st.session_state.chat_history:
-    if sender == "user":
-        st.markdown(f"<div style='text-align: right; background-color: #DCF8C6; padding: 10px; border-radius: 10px; margin: 5px;'>{message}</div>", unsafe_allow_html=True)
-    else:
-        st.markdown(f"<div style='text-align: left; background-color: #F1F0F0; padding: 10px; border-radius: 10px; margin: 5px;'>{message}</div>", unsafe_allow_html=True)
+# Title
+st.markdown("<h2 style='text-align:center;'>Infinity Copilot</h2>", unsafe_allow_html=True)
+
+# Chat display
+for sender, msg in st.session_state.chat_history:
+    css_class = "user" if sender == "You" else "bot"
+    st.markdown(f"<div class='message {css_class}'><strong>{sender}:</strong> {msg}</div>", unsafe_allow_html=True)
+
+# Input form
+with st.form("chat_form"):
+    user_input = st.text_input("Ask Infinity...", "")
+    submitted = st.form_submit_button("Send")
+    if submitted and user_input:
+        response = get_response(user_input)
+        st.session_state.chat_history.append(("You", user_input))
+        st.session_state.chat_history.append(("Infinity", response))
+        st.experimental_rerun()
+
+# Restart button
+if st.button("🔄 Restart Chat"):
+    st.session_state.chat_history = []
+    st.experimental_rerun()
